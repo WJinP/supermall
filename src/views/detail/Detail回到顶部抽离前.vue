@@ -3,10 +3,6 @@
         <detail-nav-bar class="detail-nav" @titleClick='titleClick' ref='nav'/>
         <scroll class="content" ref="scroll" @scroll="contentScroll" :probe-type="3">
             <detail-swiper :top-images='topImages'></detail-swiper>
-            <!-- <div>{{$store.state.cartList.length}}</div>
-            <ul>
-              <li v-for='item in $store.state.cartList'>{{item}}</li>
-            </ul> -->
             <detail-base-info :goods="goods"/>
             <detail-shop-info :shop="shop"/>
             <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
@@ -16,7 +12,6 @@
         </scroll>
         <detail-bottom-bar @addToCart='addToCart'></detail-bottom-bar>
         <back-top @click.native="backClick" v-show="isShowBackTop"/>
-<!-- <toast :msg='msg' :show='show'></toast> -->
 
     </div>
 </template>
@@ -30,17 +25,14 @@ import DetailParamInfo from './childComps/DetailParamInfo'
 import DetailCommentInfo from './childComps/DetailCommentInfo'
 import GoodList from 'components/content/goods/GoodList'
 import DetailBottomBar from './childComps/DetailBottomBar'
-
+import BackTop from 'components/content/backTop/BackTop'
 
 import Scroll from 'components/common/scroll/Scroll'
 
 import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
 import {debounce} from 'common/utils.js'
-import {itemListenerMixin,backTopMixin} from 'common/mixin'
+import {itemListenerMixin} from 'common/mixin'
 
-import {mapActions} from 'vuex'
-
-import Toast from 'components/common/toast/Toast'
 export default {
     name:'Detail',
     components:{
@@ -54,8 +46,7 @@ export default {
         DetailCommentInfo,
         GoodList,
         DetailBottomBar,
-        Toast
-        
+        BackTop
 
     },
     data () {
@@ -71,13 +62,12 @@ export default {
             themeTopYs: [],
             getThemeTopY:null,
             currentIndex: 0,
-            msg:'',
-            show:false
+            isShowBackTop:false,
             
 
         }
     },
-    mixins:[itemListenerMixin,backTopMixin],
+    mixins:[itemListenerMixin],
     created() {
          // 1.保存传入的iid
         this.iid=this.$route.query.iid;
@@ -153,7 +143,6 @@ export default {
 
     },
     methods: {
-      ...mapActions(['addCart']),
         imageLoad(){
           //法一：不用防抖
           //  this.$refs.scroll.refresh()
@@ -203,48 +192,21 @@ export default {
             }
           }
             //3.是否显示回到顶部
-            // this.isShowBackTop=(-position.y)>1000 
-            this.listenShowBackTop(position)
+            this.isShowBackTop=positionY>1000 
         },
         addToCart(){
-          // console.log('添加到购物车')
-          //获取购物车需要展示的信息
-          // 1.创建对象
-          const product={}
-          // 2.对象信息
-          product.image=this.topImages[0];
-          product.title=this.goods.title;
-          product.desc=this.goods.desc;
-          product.price=this.goods.realPrice;
-          product.iid=this.iid;
-          // 3.添加到Store中
-          // this.$store.commit('addCart',product)
-          //不引入mapactions
-          // this.$store.dispatch('addCart',product).then(res=>{
-          //   console.log(res)
-          // })
-          //引入后可写成
-          this.addCart(product).then(res=>{
-            console.log(res)
-          //   this.show=true;
-          //   this.msg=res
-          //   setTimeout(() => {
-          //     this.show=false;
-          //     this.msg=''
-          //   }, 2000);
-          this.$toast.show(res,2000)
-          })
           
-
-
         },
-
+        backClick(){
+          this.$refs.scroll.scrollTo(0,0)
+        }
 
 
 
     },
     destroyed() {//设置keep-alive时，进入页面时触发
-        //1.取消全局事件的监听        
+        //1.取消全局事件的监听
+        
         this.$bus.$off('itemImageLoad',this.itemImgListener)
         
     },  

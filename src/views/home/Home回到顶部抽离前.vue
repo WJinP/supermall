@@ -25,10 +25,11 @@ import NavBar from 'components/common/nav/Nav'
 import TabControl from 'components/content/tabControl/TabControl';
 import GoodList from 'components/content/goods/GoodList'
 import Scroll from 'components/common/scroll/Scroll'
+import BackTop from 'components/content/backTop/BackTop'
 
 import {getHomeMultidata,getHomeGoods} from 'network/home.js'
 import {debounce} from 'common/utils.js'
-import {itemListenerMixin,backTopMixin} from 'common/mixin'
+import {itemListenerMixin} from 'common/mixin'
 export default {
     name: 'Home',
     components: {        
@@ -39,10 +40,10 @@ export default {
         TabControl,
         GoodList,
         Scroll,
-     
+        BackTop
 
     },
-    mixins:[itemListenerMixin,backTopMixin],
+    mixins:[itemListenerMixin],
     data () {
         return {
             banners:[],
@@ -53,6 +54,7 @@ export default {
                 'sell':{page:0,list:[]}
             },
             currentType:'pop',
+            isShowBackTop:false,
             tabOffsetTop:0,
             isTabFixed:false,
             saveY: 0,
@@ -148,14 +150,15 @@ export default {
             this.$refs.tabControl1.currentIndex=index;
             this.$refs.tabControl2.currentIndex=index;
         },
-
+        backClick(){//拿到组件对象的同时可以拿到他的data和methods
+            this.$refs.scroll.scrollTo(0,0)
+        },
         contentScroll(position){
             // console.log(position)
             //1.判断BackTop是否显示
             // 三目写法this.isShowBackTop=(-position.y)>1000? true:false   
             //表达式写法 
-            // this.isShowBackTop=(-position.y)>1000   
-            this.listenShowBackTop(position)
+            this.isShowBackTop=(-position.y)>1000   
             //2.决定 tab-control是否吸顶
             this.isTabFixed=(-position.y)>this.tabOffsetTop
 
@@ -167,6 +170,14 @@ export default {
             //console.log(this.$refs.tabControl.$el.offsetTop)
             this.tabOffsetTop=this.$refs.tabControl2.$el.offsetTop
         }
+
+
+
+
+
+
+
+
     },
 
     }

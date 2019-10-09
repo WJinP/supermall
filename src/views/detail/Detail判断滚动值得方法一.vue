@@ -3,10 +3,6 @@
         <detail-nav-bar class="detail-nav" @titleClick='titleClick' ref='nav'/>
         <scroll class="content" ref="scroll" @scroll="contentScroll" :probe-type="3">
             <detail-swiper :top-images='topImages'></detail-swiper>
-            <!-- <div>{{$store.state.cartList.length}}</div>
-            <ul>
-              <li v-for='item in $store.state.cartList'>{{item}}</li>
-            </ul> -->
             <detail-base-info :goods="goods"/>
             <detail-shop-info :shop="shop"/>
             <detail-goods-info :detail-info="detailInfo" @imageLoad="imageLoad"/>
@@ -14,9 +10,6 @@
             <detail-comment-info ref="comment" :comment-info="commentInfo"></detail-comment-info>
             <good-list :goods="recommendList"  ref="recommend"></good-list>
         </scroll>
-        <detail-bottom-bar @addToCart='addToCart'></detail-bottom-bar>
-        <back-top @click.native="backClick" v-show="isShowBackTop"/>
-<!-- <toast :msg='msg' :show='show'></toast> -->
 
     </div>
 </template>
@@ -29,18 +22,13 @@ import DetailGoodsInfo from './childComps/DetailGoodsInfo'
 import DetailParamInfo from './childComps/DetailParamInfo'
 import DetailCommentInfo from './childComps/DetailCommentInfo'
 import GoodList from 'components/content/goods/GoodList'
-import DetailBottomBar from './childComps/DetailBottomBar'
-
 
 import Scroll from 'components/common/scroll/Scroll'
 
 import {getDetail,Goods,Shop,GoodsParam,getRecommend} from 'network/detail'
 import {debounce} from 'common/utils.js'
-import {itemListenerMixin,backTopMixin} from 'common/mixin'
+import {itemListenerMixin} from 'common/mixin'
 
-import {mapActions} from 'vuex'
-
-import Toast from 'components/common/toast/Toast'
 export default {
     name:'Detail',
     components:{
@@ -51,11 +39,7 @@ export default {
         Scroll,
         DetailGoodsInfo,
         DetailParamInfo,
-        DetailCommentInfo,
-        GoodList,
-        DetailBottomBar,
-        Toast
-        
+        DetailCommentInfo,GoodList
 
     },
     data () {
@@ -70,14 +54,12 @@ export default {
             recommendList: [],
             themeTopYs: [],
             getThemeTopY:null,
-            currentIndex: 0,
-            msg:'',
-            show:false
+            currentIndex: 0
             
 
         }
     },
-    mixins:[itemListenerMixin,backTopMixin],
+    mixins:[itemListenerMixin],
     created() {
          // 1.保存传入的iid
         this.iid=this.$route.query.iid;
@@ -134,8 +116,7 @@ export default {
           this.themeTopYs.push(this.$refs.param.$el.offsetTop)
           this.themeTopYs.push(this.$refs.comment.$el.offsetTop)
           this.themeTopYs.push(this.$refs.recommend.$el.offsetTop)
-          //法2需添加一个最大值
-          this.themeTopYs.push(Number.MAX_VALUE)
+          
           console.log(this.themeTopYs) 
         },500)
 
@@ -153,7 +134,6 @@ export default {
 
     },
     methods: {
-      ...mapActions(['addCart']),
         imageLoad(){
           //法一：不用防抖
           //  this.$refs.scroll.refresh()
@@ -180,71 +160,31 @@ export default {
             //i+1会有问题 字符串拼接  可以给i*1
             //i+1会有越界问题 最后一个位置undefined 所以要分两种情况
             let length=this.themeTopYs.length;
-            //正确做法一需要全部遍历 for(var i=0;i<length;i++)
-            //正确做法二是不需要遍历最后一个的，否则又出现越界问题
-            for(var i=0;i<length-1;i++){
-            //错误 if(positionY>this.themeTopYs[i]&&positionY<this.themeTopYs[i+1]){
+            for(var i=0;i<length;i++){
+            // if(positionY>this.themeTopYs[i]&&positionY<this.themeTopYs[i+1]){
             //   console.log(i)
             // }
             //正确做法一
-            // if(this.currentIndex !== i && ((i<length-1 && positionY>=this.themeTopYs[i] && positionY<this.themeTopYs[i+1]) || (i===length-1 && positionY>=this.themeTopYs[i]))){
-            //   this.currentIndex=i;
-            //     console.log(this.currentIndex)
-            //     this.$refs.nav.currentIndex=this.currentIndex
-            // }
-            //正确做法二
-            //给themeTopYs一个非常大的值，这样就不需要判断最后一个了
-            //js中的最大值Number.MAX_VALUE
-
-            if(this.currentIndex !== i && (positionY>=this.themeTopYs[i] && positionY<this.themeTopYs[i+1])){
+            if(this.currentIndex !== i && ((i<length-1 && positionY>=this.themeTopYs[i] && positionY<this.themeTopYs[i+1]) || (i===length-1 && positionY>=this.themeTopYs[i]))){
               this.currentIndex=i;
                 console.log(this.currentIndex)
                 this.$refs.nav.currentIndex=this.currentIndex
             }
+
+
           }
-            //3.是否显示回到顶部
-            // this.isShowBackTop=(-position.y)>1000 
-            this.listenShowBackTop(position)
-        },
-        addToCart(){
-          // console.log('添加到购物车')
-          //获取购物车需要展示的信息
-          // 1.创建对象
-          const product={}
-          // 2.对象信息
-          product.image=this.topImages[0];
-          product.title=this.goods.title;
-          product.desc=this.goods.desc;
-          product.price=this.goods.realPrice;
-          product.iid=this.iid;
-          // 3.添加到Store中
-          // this.$store.commit('addCart',product)
-          //不引入mapactions
-          // this.$store.dispatch('addCart',product).then(res=>{
-          //   console.log(res)
-          // })
-          //引入后可写成
-          this.addCart(product).then(res=>{
-            console.log(res)
-          //   this.show=true;
-          //   this.msg=res
-          //   setTimeout(() => {
-          //     this.show=false;
-          //     this.msg=''
-          //   }, 2000);
-          this.$toast.show(res,2000)
-          })
-          
 
 
-        },
 
 
+
+        }
 
 
     },
     destroyed() {//设置keep-alive时，进入页面时触发
-        //1.取消全局事件的监听        
+        //1.取消全局事件的监听
+        
         this.$bus.$off('itemImageLoad',this.itemImgListener)
         
     },  
@@ -267,7 +207,6 @@ export default {
   }
 
   .content {
-    /* height: calc(100% - 44px -58px); */
-    height: calc(100% - 102px);
+    height: calc(100% - 44px);
   }
 </style>

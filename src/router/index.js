@@ -15,7 +15,7 @@ export default new Router({
       component:()=>import ('views/home/Home')
     },
     {
-      path:'/categroy',
+      path:'/category',
       component:()=>import ('views/category/Category')
     },
     {
@@ -26,6 +26,10 @@ export default new Router({
       path:'/profile',
       component:()=>import ('views/profile/Profile')
     },
+    // {
+    //   path:'/detail/:iid',
+    //   component:()=>import ('views/detail/Detail')
+    // },
     {
       path:'/detail',
       component:()=>import ('views/detail/Detail')

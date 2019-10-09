@@ -1,7 +1,10 @@
 <!-- 组件说明 -->
 <template>
-    <div class=''>
-        
+    <div class='feature'>
+        <a href="https://act.mogujie.com/">
+        <img src="~assets/img/home/recommend_bg.jpg" alt="" srcset="">
+         
+        </a>
     </div>
 </template>
 
@@ -29,6 +32,14 @@ export default {
     }
 </script>
 
-<style lang='' scoped>
-
+<style scoped>
+  .feature {
+    padding-bottom: 30px;
+    border-bottom: 10px solid #eee;
+  }
+  .feature img {
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+  }
 </style>
